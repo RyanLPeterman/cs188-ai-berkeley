@@ -70,22 +70,20 @@ class Node():
 
 def genSearch(problem, container):
 
-    # container holds nodes which contain state
-    start_node = Node(problem.getStartState(), [], 0)
-    container.push(start_node)
-    visited = set()
+    # Container holds nodes which contain state
+    container.push(Node(problem.getStartState(), [], 0))
+
+    # Using list instead of set to provide comparison function for state object
+    visited = []
 
     while not container.isEmpty():
         curr_node = container.pop()
-        visited.add(curr_node.state)
 
-        # import sys
-        # sys.stdin.readline()
-        # print "curr_node:", curr_node[0]
-        # print "curr_node's successors:", problem.getSuccessors(curr_node[0])
-        # print "path to curr_node: ", path
-        # print "toVisit contents: ", container._print()
-        # print "visited set", problem._visited
+        # to prevent needless expansion
+        if curr_node.state in visited:
+            continue
+
+        visited.append(curr_node.state)
 
         # Done
         if problem.isGoalState(curr_node.state):
