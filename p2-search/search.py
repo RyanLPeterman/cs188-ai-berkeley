@@ -61,6 +61,36 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
+def genSearch(problem, container):
+
+    # container holds successor information + actions up til then
+    container.push(((problem.getStartState(), None, 1), []))
+
+    while not container.isEmpty():
+        curr = container.pop()
+        node, actions = curr[0], curr[1]
+
+        # import sys
+        # sys.stdin.readline()
+        # print "node:", node[0]
+        # print "node's successors:", problem.getSuccessors(node[0])
+        # print "actions to node: ", actions
+        # print "toVisit contents: ", container._print()
+        # print "visited set", problem._visited
+
+        # Done
+        if problem.isGoalState(node[0]):
+            return actions
+
+        # Process all potential nodes
+        for node in problem.getSuccessors(node[0]):
+            if node[0] not in problem._visited:
+                # concat creates new list without affecting actions
+                container.push((node, actions + [node[1]]))
+
+
+    print "Exausted search space, but found no goal"
+    return actions
 
 def tinyMazeSearch(problem):
     """
@@ -75,89 +105,18 @@ def tinyMazeSearch(problem):
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
-
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-
-    # list of actions leading to goal
-    actions = []
-    visited_set = set()
-
-    stack = util.Stack()
-    stack.push((problem.getStartState(), None, 1))
-
-    while not stack.isEmpty():
-
-        curr = stack.pop()
-        visited_set.add(curr[0])
-        if curr[1]:
-            actions.append(curr[1])
-
-        # import sys
-        # sys.stdin.readline()
-        # print "Curr:", curr[0]
-        # print "Curr's successors:", problem.getSuccessors(curr[0])
-        # print "Stack: ", stack._print()
-        # print curr[1]
-
-        # Done
-        if problem.isGoalState(curr[0]):
-            return actions
-
-
-        # Dead End
-        is_dead_end = True
-
-        # Process all potential nodes
-        for node in problem.getSuccessors(curr[0]):
-            if not node[0] in visited_set:
-                is_dead_end = False
-                stack.push(node)
-
-        if is_dead_end:
-            # Pop actions until state is restored to last node on stack
-            curr_state = curr[0]
-            goal_state = stack.top()[0]
-
-            while goal_state not in [coord[0] for coord in problem.getSuccessors(curr_state)]:
-                prev_action = actions.pop()
-                delta_x = 0
-                delta_y = 0
-
-                if prev_action == 'North':
-                    delta_y = -1
-                elif prev_action == 'South':
-                    delta_y = 1
-                elif prev_action == 'East':
-                    delta_x = -1
-                elif prev_action == 'West':
-                    delta_x = 1
-                else:
-                    raise Exception('Invalid Direction Found')
-
-                curr_state = (int(curr_state[0]) + delta_x, int(curr_state[1]) + delta_y)
-
-
-    print "Exausted search space, but found no goal"
-    return actions
+    return genSearch(problem, util.Stack())
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    util.raiseNotDefined()
+    return genSearch(problem, util.Queue())
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    priority_queue = util.PriorityQueue()
-
-    util.raiseNotDefined()
+    # lambda of cost function since container contains tuple containing (node, actions)
+    priority_queue = util.PriorityQueueWithFunction(lambda x: problem.costFn(x[0][0]))
+    return genSearch(problem, priority_queue)
 
 def nullHeuristic(state, problem=None):
     """
@@ -168,8 +127,8 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    priority_queue = util.PriorityQueueWithFunction(lambda x: problem.costFn(x[0][0]) + heuristic(x[0][0], problem))
+    return genSearch(problem, priority_queue)
 
 
 # Abbreviations

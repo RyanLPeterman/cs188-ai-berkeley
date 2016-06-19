@@ -134,9 +134,9 @@ class Stack:
         "Returns true if the stack is empty"
         return len(self.list) == 0
 
-    def top(self):
-        "Returns top element of stack"
-        return self.list[-1]
+    def _print(self):
+        "Prints stack for debugging"
+        print self.list
 
 class Queue:
     "A container with a first-in-first-out (FIFO) queuing policy."
@@ -158,9 +158,9 @@ class Queue:
         "Returns true if the queue is empty"
         return len(self.list) == 0
 
-    def front(self):
-        "Returns front element of queue"
-        return self.list[-1]
+    def _print(self):
+        "Prints queue for debugging"
+        print self.list
 
 class PriorityQueue:
     """
