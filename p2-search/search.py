@@ -61,36 +61,43 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
+class Node():
+    # Makes accesses idomatic, holds state of a cell in maze
+    def __init__(self, state, path, priority):
+        self.state = state
+        self.path = path
+        self.priority = priority
+
 def genSearch(problem, container):
 
-    # container holds successor information + actions up til then
-    container.push(((problem.getStartState(), None, 1), []))
+    # container holds nodes which contain state
+    start_node = Node(problem.getStartState(), [], 0)
+    container.push(start_node)
+    visited = set()
 
     while not container.isEmpty():
-        curr = container.pop()
-        node, actions = curr[0], curr[1]
+        curr_node = container.pop()
+        visited.add(curr_node.state)
 
         # import sys
         # sys.stdin.readline()
-        # print "node:", node[0]
-        # print "node's successors:", problem.getSuccessors(node[0])
-        # print "actions to node: ", actions
+        # print "curr_node:", curr_node[0]
+        # print "curr_node's successors:", problem.getSuccessors(curr_node[0])
+        # print "path to curr_node: ", path
         # print "toVisit contents: ", container._print()
         # print "visited set", problem._visited
 
         # Done
-        if problem.isGoalState(node[0]):
-            return actions
+        if problem.isGoalState(curr_node.state):
+            return curr_node.path
 
         # Process all potential nodes
-        for node in problem.getSuccessors(node[0]):
-            if node[0] not in problem._visited:
-                # concat creates new list without affecting actions
-                container.push((node, actions + [node[1]]))
+        for tup in problem.getSuccessors(curr_node.state):
+            if tup[0] not in visited:
+                # concat creates new path without affecting path
+                container.push(Node(tup[0], curr_node.path + [tup[1]], tup[2]))
 
-
-    print "Exausted search space, but found no goal"
-    return actions
+    raise RunTimeError("Exausted search space, but found no goal")
 
 def tinyMazeSearch(problem):
     """
@@ -103,9 +110,7 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 def depthFirstSearch(problem):
-    """
-    Search the deepest nodes in the search tree first.
-    """
+    """ Search the deepest nodes in the search tree first. """
     return genSearch(problem, util.Stack())
 
 def breadthFirstSearch(problem):
@@ -114,8 +119,9 @@ def breadthFirstSearch(problem):
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    # lambda of cost function since container contains tuple containing (node, actions)
-    priority_queue = util.PriorityQueueWithFunction(lambda x: problem.costFn(x[0][0]))
+
+    # lambda of cost function since costFn expecting coord
+    priority_queue = util.PriorityQueueWithFunction(lambda x: problem.costFn(x.state))
     return genSearch(problem, priority_queue)
 
 def nullHeuristic(state, problem=None):
@@ -126,8 +132,8 @@ def nullHeuristic(state, problem=None):
     return 0
 
 def aStarSearch(problem, heuristic=nullHeuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
-    priority_queue = util.PriorityQueueWithFunction(lambda x: problem.costFn(x[0][0]) + heuristic(x[0][0], problem))
+    """ Search the node that has the lowest combined cost and heuristic first."""
+    priority_queue = util.PriorityQueueWithFunction(lambda x: problem.costFn(x.state) + heuristic(x.state, problem))
     return genSearch(problem, priority_queue)
 
 
