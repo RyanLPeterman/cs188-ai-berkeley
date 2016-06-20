@@ -93,7 +93,7 @@ def genSearch(problem, container):
         for tup in problem.getSuccessors(curr_node.state):
             if tup[0] not in visited:
                 # concat creates new path without affecting path
-                container.push(Node(tup[0], curr_node.path + [tup[1]], tup[2]))
+                container.push(Node(tup[0], curr_node.path + [tup[1]], tup[2] + curr_node.priority))
 
     raise RunTimeError("Exausted search space, but found no goal")
 
@@ -119,7 +119,7 @@ def uniformCostSearch(problem):
     """Search the node of least total cost first."""
 
     # lambda of cost function since costFn expecting coord
-    priority_queue = util.PriorityQueueWithFunction(lambda x: problem.costFn(x.state))
+    priority_queue = util.PriorityQueueWithFunction(lambda x: x.priority)
     return genSearch(problem, priority_queue)
 
 def nullHeuristic(state, problem=None):
@@ -131,7 +131,7 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """ Search the node that has the lowest combined cost and heuristic first."""
-    priority_queue = util.PriorityQueueWithFunction(lambda x: problem.costFn(x.state) + heuristic(x.state, problem))
+    priority_queue = util.PriorityQueueWithFunction(lambda x: x.priority + heuristic(x.state, problem))
     return genSearch(problem, priority_queue)
 
 
