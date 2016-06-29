@@ -494,46 +494,51 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    # Problem contains a lot of additional info
-    # print dir(problem)
-    # print type(foodGrid)
-    # print problem.walls.asList()
 
     # Idea 1: Count number of dots still left (12000 nodes expanded)
-    return len(foodGrid.asList())
+    # return len(foodGrid.asList())
 
-    # Idea 2: Minimum Spanning Tree
-    nodes = foodGrid.asList()
+    # Idea 2: Minimum Spanning Tree (Primm's Algorithm)
     edge_calc = lambda node1, node2: abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
-    # contains list of tuples: (edge_weight, node1, node2)
-    edges = []
+    # contains list of tuples: (node1, node2) with associated priority
+    edges = util.PriorityQueue()
+    vertices = foodGrid.asList()
 
-    # Build list of edges that contain dist, and two nodes responsible
-    for pair in list(itertools.combinations(nodes, 2):
-        edge_weight = edge_calc(pair[0], pair[1])
-        edges.append(edge_weight, pair[0], pair[1])
-    
-    # initially all food not included in min spanning tree accumulator    
-    not_included_set = set(foodGrid.asList())
+    # initially none in tree cept first vert
+    if vertices:
+        not_included_set = set(vertices[1:])
+        curr_vert = vertices[0]
+    else:
+        return 0
 
-    from operator import itemgetter
-    # sort edges by weight
-    sorted(edges, key=itemgetter(0))
+    min_span_weight = 0
 
-    # TODO: also add path up to nearest node to min spanning tree result acc
-    acc = 0    
-
-    # pick minimum of edges that do not have nodes in included set
+    # while all nodes not included in min spanning tree
     while len(not_included_set) > 0:
-    	min_edge, node1, node2 = edges.pop(0)
-	# if either node in not included set
-        if node1 in not_included_set or node2 in not_included_set:
-	    # set as included by removing from not_included_set
-	    not_included_set.discard(node1)
-	    not_included_set.discard(node2)        
-	    acc += min_edge
+        # calc all edges from curr_vert to all other nodes in not included set
+        for node in not_included_set:
+            edge_weight = edge_calc(curr_vert, node)
+            edges.push((curr_vert, node, edge_weight), edge_weight)
 
-    return acc    
+        node1, node2, weight = edges.pop()
+        min_span_weight += weight
+
+        if node1 in not_included_set:
+            curr_vert = node1
+            not_included_set.discard(node1)
+        else:
+            curr_vert = node2
+            not_included_set.discard(node2)
+
+    dist_to_closest = float('inf')
+
+    # length of path to closest node
+    for food in foodGrid.asList():
+        curr_dist = edge_calc(food, position)
+        if curr_dist < dist_to_closest:
+            dist_to_closest = curr_dist
+
+    return min_span_weight + dist_to_closest
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
